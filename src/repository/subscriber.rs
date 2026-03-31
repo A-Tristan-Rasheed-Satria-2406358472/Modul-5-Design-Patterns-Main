@@ -36,7 +36,7 @@ impl SubscriberRepository {
         }
         let result = SUBSCRIBERS.get(product_type).unwrap()
             .remove(url);
-        if result.is_none() {
+        if result.is_some() {
             return Some(result.unwrap().1);
         }
         return None;
