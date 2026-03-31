@@ -1,12 +1,15 @@
 # BambangShop Publisher App
+
 Tutorial and Example for Advanced Programming 2024 - Faculty of Computer Science, Universitas Indonesia
 
 ---
 
 ## About this Project
+
 In this repository, we have provided you a REST (REpresentational State Transfer) API project using Rocket web framework.
 
 This project consists of four modules:
+
 1.  `controller`: this module contains handler functions used to receive request and send responses.
     In Model-View-Controller (MVC) pattern, this is the Controller part.
 2.  `model`: this module contains structs that serve as data containers.
@@ -35,48 +38,57 @@ You can also make automated functional testing scripts for REST API projects usi
 You can install Postman via this website: https://www.postman.com/downloads/
 
 ## How to Run in Development Environment
+
 1.  Set up environment variables first by creating `.env` file.
     Here is the example of `.env` file:
     ```bash
     APP_INSTANCE_ROOT_URL="http://localhost:8000"
     ```
     Here are the details of each environment variable:
-    | variable              | type   | description                                                |
+    | variable | type | description |
     |-----------------------|--------|------------------------------------------------------------|
     | APP_INSTANCE_ROOT_URL | string | URL address where this publisher instance can be accessed. |
 2.  Use `cargo run` to run this app.
     (You might want to use `cargo check` if you only need to verify your work without running the app.)
 
 ## Mandatory Checklists (Publisher)
--   [ ] Clone https://gitlab.com/ichlaffterlalu/bambangshop to a new repository.
--   **STAGE 1: Implement models and repositories**
-    -   [ ] Commit: `Create Subscriber model struct.`
-    -   [ ] Commit: `Create Notification model struct.`
-    -   [ ] Commit: `Create Subscriber database and Subscriber repository struct skeleton.`
-    -   [ ] Commit: `Implement add function in Subscriber repository.`
-    -   [ ] Commit: `Implement list_all function in Subscriber repository.`
-    -   [ ] Commit: `Implement delete function in Subscriber repository.`
-    -   [ ] Write answers of your learning module's "Reflection Publisher-1" questions in this README.
--   **STAGE 2: Implement services and controllers**
-    -   [ ] Commit: `Create Notification service struct skeleton.`
-    -   [ ] Commit: `Implement subscribe function in Notification service.`
-    -   [ ] Commit: `Implement subscribe function in Notification controller.`
-    -   [ ] Commit: `Implement unsubscribe function in Notification service.`
-    -   [ ] Commit: `Implement unsubscribe function in Notification controller.`
-    -   [ ] Write answers of your learning module's "Reflection Publisher-2" questions in this README.
--   **STAGE 3: Implement notification mechanism**
-    -   [ ] Commit: `Implement update method in Subscriber model to send notification HTTP requests.`
-    -   [ ] Commit: `Implement notify function in Notification service to notify each Subscriber.`
-    -   [ ] Commit: `Implement publish function in Program service and Program controller.`
-    -   [ ] Commit: `Edit Product service methods to call notify after create/delete.`
-    -   [ ] Write answers of your learning module's "Reflection Publisher-3" questions in this README.
+
+- [ ] Clone https://gitlab.com/ichlaffterlalu/bambangshop to a new repository.
+- **STAGE 1: Implement models and repositories**
+  - [ ] Commit: `Create Subscriber model struct.`
+  - [ ] Commit: `Create Notification model struct.`
+  - [ ] Commit: `Create Subscriber database and Subscriber repository struct skeleton.`
+  - [ ] Commit: `Implement add function in Subscriber repository.`
+  - [ ] Commit: `Implement list_all function in Subscriber repository.`
+  - [ ] Commit: `Implement delete function in Subscriber repository.`
+  - [ ] Write answers of your learning module's "Reflection Publisher-1" questions in this README.
+- **STAGE 2: Implement services and controllers**
+  - [ ] Commit: `Create Notification service struct skeleton.`
+  - [ ] Commit: `Implement subscribe function in Notification service.`
+  - [ ] Commit: `Implement subscribe function in Notification controller.`
+  - [ ] Commit: `Implement unsubscribe function in Notification service.`
+  - [ ] Commit: `Implement unsubscribe function in Notification controller.`
+  - [ ] Write answers of your learning module's "Reflection Publisher-2" questions in this README.
+- **STAGE 3: Implement notification mechanism**
+  - [ ] Commit: `Implement update method in Subscriber model to send notification HTTP requests.`
+  - [ ] Commit: `Implement notify function in Notification service to notify each Subscriber.`
+  - [ ] Commit: `Implement publish function in Program service and Program controller.`
+  - [ ] Commit: `Edit Product service methods to call notify after create/delete.`
+  - [ ] Write answers of your learning module's "Reflection Publisher-3" questions in this README.
 
 ## Your Reflections
+
 This is the place for you to write reflections:
 
 ### Mandatory (Publisher) Reflections
 
 #### Reflection Publisher-1
+
+1. Menurut saya, pada kasus BambangShop ini kita belum benar-benar membutuhkan interface atau trait terpisah untuk Subscriber jika perilaku yang dimiliki semua subscriber masih sama dan implementasinya hanya satu. Pada pattern Observer, interface biasanya dipakai supaya Subject bisa berinteraksi dengan banyak jenis observer tanpa peduli implementasi konkretnya. Namun di project ini, subscriber saat ini hanya direpresentasikan sebagai data yang berisi url dan name, lalu perilakunya juga masih terfokus pada satu jenis mekanisme notifikasi HTTP. Jadi sebuah struct model saja sudah cukup untuk kebutuhan sekarang. Trait baru akan terasa penting kalau nanti ada beberapa tipe subscriber dengan perilaku berbeda, misalnya ada subscriber yang menerima webhook, ada yang menyimpan ke message queue, atau ada yang membutuhkan format notifikasi berbeda.
+
+2. Untuk data yang memang harus unik seperti id pada Program dan url pada Subscriber, menurut saya Vec saja kurang ideal jika operasi yang sering dilakukan adalah pencarian, pengecekan duplikasi, atau penghapusan berdasarkan key unik. Vec masih bisa dipakai, tetapi setiap kali ingin mencari atau menghapus elemen kita perlu melakukan iterasi satu per satu, sehingga kurang efisien dan lebih rawan error saat aplikasi berkembang. Struktur seperti Dashmap atau map/dictionary lebih cocok karena key unik memang menjadi pusat identitas datanya. Dengan map, kita bisa langsung mengakses data berdasarkan id atau url, lebih mudah menjaga keunikan, dan operasi tambah/cari/hapus juga lebih natural untuk kasus ini.
+
+3. Menurut saya, Singleton dan Dashmap sebenarnya menjawab dua kebutuhan yang berbeda, jadi Singleton saja tidak otomatis menggantikan kebutuhan Dashmap. Singleton pattern berfokus pada memastikan hanya ada satu instance global dari suatu objek. Sementara itu, Dashmap dipakai untuk memastikan akses terhadap data bersama tetap aman saat ada banyak thread yang berjalan bersamaan. Dalam kasus Subscribers, kita memang bisa saja mengatakan variabel statis itu adalah bentuk satu sumber data tunggal, mirip gagasan Singleton. Tetapi masalah utamanya bukan cuman harus satu instance, melainkan juga bagaimana instance itu diakses secara aman secara paralel. Karena itu, menurut saya kita tetap butuh struktur data yang thread-safe seperti Dashmap. Jadi Singleton tidak menggantikan Dashmap, kalaupun konsep Singleton ingin dipakai, ia lebih cocok dipadukan dengan container thread-safe, bukan digunakan sebagai pengganti.
 
 #### Reflection Publisher-2
 
